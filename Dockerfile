@@ -1,5 +1,5 @@
 FROM python:3.11-alpine3.17
-LABEL maintainer="Brian Koech <brightkoech@gmail.com>"
+LABEL maintainer="Brian Koech <info@librantechie.tech>"
 
 ENV PYTHONUNBUFFERED 1
 
@@ -15,7 +15,10 @@ RUN python -m venv /py && \
     /py/bin/pip install --upgrade pip && \
     apk add --update --no-cache postgresql-client jpeg-dev && \
     apk add --update --no-cache --virtual .tmp-build-deps \
-        build-base postgresql-dev musl-dev zlib zlib-dev linux-headers && \
+        build-base gcc curl postgresql-dev musl-dev zlib zlib-dev linux-headers && \
+    curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" \
+    -o /usr/local/bin/docker-compose && \
+    chmod +x /usr/local/bin/docker-compose && \
     /py/bin/pip install -r /tmp/requirements.txt && \
     if [ $DEV = "true" ]; \
         then /py/bin/pip install -r /tmp/requirements.dev.txt ; \
@@ -28,6 +31,7 @@ RUN python -m venv /py && \
         django-user && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
+    chown -R django-user:django-user /app && \
     chown -R django-user:django-user /vol && \
     chmod -R 755 /vol && \
     chmod -R +x /scripts
